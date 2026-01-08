@@ -38,22 +38,12 @@ class FocalLoss(torch.nn.Module):
         else:
             return focal_loss
 
-#***   搜索最优 alpha, gamma
+#***   search best alpha, gamma
 # ======================
 def tune_focal_loss(model, train_data, val_data, device, 
                     alpha_range=(0.1, 1.0), gamma_range=(0.1, 5.0),
                     search_mode="grid", num_alpha=10, num_gamma=10, num_samples=20, 
                     epochs=5):
-    """
-    自动搜索最佳 FocalLoss 参数 alpha, gamma
-    :param alpha_range: (min, max)
-    :param gamma_range: (min, max)
-    :param search_mode: "grid" 或 "random"
-    :param num_alpha: grid search 时 alpha 采样点数
-    :param num_gamma: grid search 时 gamma 采样点数
-    :param num_samples: random search 时采样次数
-    :param epochs: 每组参数快速训练 epoch 数
-    """
     best_auc = -1
     best_alpha, best_gamma = 0.5, 2.0
 
@@ -69,7 +59,7 @@ def tune_focal_loss(model, train_data, val_data, device,
         focal_loss_fn = FocalLoss(alpha=alpha, gamma=gamma).to(device)
         optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
-        for _ in range(epochs):  # 少量 epoch 快速验证
+        for _ in range(epochs):  # 
             model.train()
             optimizer.zero_grad()
             preds = model(train_data.x, train_data.edge_index)
@@ -84,7 +74,6 @@ def tune_focal_loss(model, train_data, val_data, device,
             loss.backward()
             optimizer.step()
 
-        # 验证集 AUC
         model.eval()
         with torch.no_grad():
             preds_val = model(val_data.x, val_data.edge_index)
@@ -127,7 +116,6 @@ with open(args.configs_path) as file:
 
 device = torch.device(f"cuda:{args.gpu}" if torch.cuda.is_available() else "cpu")
 
-#加载 5 折交叉验证的数据，将数据移动到指定设备
 # data_list = esm2_embeddings_5fold(args.configs_path)
 data_list = TEINet_embeddings_5fold(args.configs_path)
 data_list = [data.to(device) for data in data_list]
@@ -214,12 +202,10 @@ for epoch in range(num_epochs):
         aucm_optimizer.step()
         sgd_optimizer.step()
 
-    #
     accuracy = compute_accuracy(preds, y_true)
     roc_auc = compute_auc(preds, y_true)
     aupr = compute_aupr(preds, y_true)
 
-    #
     model.eval()
     with torch.no_grad():
         out_valid = model(test_data.x, test_data.edge_index)
