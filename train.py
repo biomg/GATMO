@@ -224,9 +224,7 @@ for epoch in range(num_epochs):
     
 # Load the best model
 best_model = GraphNet(num_node_features=test_data.num_node_features).to(device)
-##  TEINet_embeddings_5fold
 best_model.load_state_dict(torch.load(configs['save_model'],weights_only=True))
-##  esm_embeddings_5fold
 # best_model.load_state_dict(torch.load(configs['save_model'],weights_only=False))
 
 
