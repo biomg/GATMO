@@ -14,9 +14,6 @@ class GraphNet(torch.nn.Module):
         args = parse_args()
         self.droup_out = args.droup_out
 
-        # self.conv1 = SAGEConv(num_node_features, hidden_channels)
-        # self.conv2 = SAGEConv(hidden_channels, hidden_channels)
-
         self.conv1 = GATConv(num_node_features, hidden_channels // heads, heads=heads)
         self.conv2 = GATConv(hidden_channels, hidden_channels // heads, heads=heads)
 
